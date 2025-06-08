@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/candidate-form/static/css/main.fc63a695.css",
+    "main.js": "/candidate-form/static/js/main.b105a92a.js",
+    "static/js/453.43bc78c3.chunk.js": "/candidate-form/static/js/453.43bc78c3.chunk.js",
+    "index.html": "/candidate-form/index.html",
+    "main.fc63a695.css.map": "/candidate-form/static/css/main.fc63a695.css.map",
+    "main.b105a92a.js.map": "/candidate-form/static/js/main.b105a92a.js.map",
+    "453.43bc78c3.chunk.js.map": "/candidate-form/static/js/453.43bc78c3.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.fc63a695.css",
+    "static/js/main.b105a92a.js"
+  ]
+}
