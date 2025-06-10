@@ -6,42 +6,73 @@ function App() {
     email: "",
     phone: "",
     portfolio: "",
-    experience: "",
-    skills: "",
-    experienceDetails: "",
-    projects: "",
+    experiences: [
+      {
+        years: "",
+        skills: "",
+        details: "",
+        projects: "",
+      },
+    ],
     linkedin: "",
     github: "",
   });
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData((prev) => ({
+      ...prev,
       [id]: value,
+    }));
+  };
+
+  const handleExperienceChange = (index, field, value) => {
+    const updatedExperiences = [...formData.experiences];
+    updatedExperiences[index][field] = value;
+
+    setFormData((prev) => ({
+      ...prev,
+      experiences: updatedExperiences,
+    }));
+  };
+
+  const addExperience = () => {
+    setFormData((prev) => ({
+      ...prev,
+      experiences: [
+        ...prev.experiences,
+        {
+          years: "",
+          skills: "",
+          details: "",
+          projects: "",
+        },
+      ],
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Save data to localStorage
     const existing = JSON.parse(localStorage.getItem("submissions")) || [];
     const updated = [...existing, formData];
     localStorage.setItem("submissions", JSON.stringify(updated));
 
     alert("Application submitted successfully!");
 
-    // Reset the form
     setFormData({
       fullName: "",
       email: "",
       phone: "",
       portfolio: "",
-      experience: "",
-      skills: "",
-      experienceDetails: "",
-      projects: "",
+      experiences: [
+        {
+          years: "",
+          skills: "",
+          details: "",
+          projects: "",
+        },
+      ],
       linkedin: "",
       github: "",
     });
@@ -58,62 +89,83 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="fullName" className="block font-semibold mb-2">Full Name</label>
-              <input id="fullName" type="text" value={formData.fullName} onChange={handleChange} placeholder="Your full name" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+              <input id="fullName" type="text" value={formData.fullName} onChange={handleChange} className="w-full border rounded-lg p-3" />
             </div>
             <div>
-              <label htmlFor="email" className="block font-semibold mb-2">Email Address</label>
-              <input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+              <label htmlFor="email" className="block font-semibold mb-2">Email</label>
+              <input id="email" type="email" value={formData.email} onChange={handleChange} className="w-full border rounded-lg p-3" />
             </div>
             <div>
-              <label htmlFor="phone" className="block font-semibold mb-2">Phone Number</label>
-              <input id="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="+91 98765 43210" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+              <label htmlFor="phone" className="block font-semibold mb-2">Phone</label>
+              <input id="phone" type="tel" value={formData.phone} onChange={handleChange} className="w-full border rounded-lg p-3" />
             </div>
             <div>
-              <label htmlFor="portfolio" className="block font-semibold mb-2">Portfolio URL</label>
-              <input id="portfolio" type="url" value={formData.portfolio} onChange={handleChange} placeholder="https://yourportfolio.com" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+              <label htmlFor="portfolio" className="block font-semibold mb-2">Portfolio</label>
+              <input id="portfolio" type="url" value={formData.portfolio} onChange={handleChange} className="w-full border rounded-lg p-3" />
             </div>
           </div>
         </section>
 
-        {/* Experience */}
+        {/* Experience Section */}
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-6 border-b border-indigo-300 pb-2">Experience & Skills</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="experience" className="block font-semibold mb-2">Years of Experience</label>
-              <input id="experience" type="number" value={formData.experience} onChange={handleChange} placeholder="3" min="0" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
-            </div>
-            <div>
-              <label htmlFor="skills" className="block font-semibold mb-2">Key Skills</label>
-              <input id="skills" type="text" value={formData.skills} onChange={handleChange} placeholder="JavaScript, React, Node.js" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
-            </div>
-            <div className="md:col-span-2">
-              <label htmlFor="experienceDetails" className="block font-semibold mb-2">Experience Details</label>
-              <textarea id="experienceDetails" rows="4" value={formData.experienceDetails} onChange={handleChange} placeholder="Briefly describe your relevant work experience" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none" />
-            </div>
-          </div>
-        </section>
+          <h2 className="text-2xl font-semibold mb-6 border-b border-indigo-300 pb-2 flex justify-between items-center">
+            Experience & Projects
+            <button type="button" onClick={addExperience} className="text-white bg-indigo-600 px-3 py-1 rounded hover:bg-indigo-700">+ Add</button>
+          </h2>
 
-        {/* Projects */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-6 border-b border-indigo-300 pb-2">Projects</h2>
-          <div>
-            <label htmlFor="projects" className="block font-semibold mb-2">Highlight Your Projects</label>
-            <textarea id="projects" rows="4" value={formData.projects} onChange={handleChange} placeholder="Describe the key projects you have worked on" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none" />
-          </div>
+          {formData.experiences.map((exp, index) => (
+            <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 border border-gray-300 rounded-lg p-4">
+              <div>
+                <label className="block font-semibold mb-2">Years of Experience</label>
+                <input
+                  type="number"
+                  value={exp.years}
+                  onChange={(e) => handleExperienceChange(index, "years", e.target.value)}
+                  className="w-full border rounded-lg p-3"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-2">Skills</label>
+                <input
+                  type="text"
+                  value={exp.skills}
+                  onChange={(e) => handleExperienceChange(index, "skills", e.target.value)}
+                  className="w-full border rounded-lg p-3"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block font-semibold mb-2">Experience Details</label>
+                <textarea
+                  rows="3"
+                  value={exp.details}
+                  onChange={(e) => handleExperienceChange(index, "details", e.target.value)}
+                  className="w-full border rounded-lg p-3"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block font-semibold mb-2">Projects</label>
+                <textarea
+                  rows="3"
+                  value={exp.projects}
+                  onChange={(e) => handleExperienceChange(index, "projects", e.target.value)}
+                  className="w-full border rounded-lg p-3"
+                />
+              </div>
+            </div>
+          ))}
         </section>
 
         {/* Links */}
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-6 border-b border-indigo-300 pb-2">Social & Professional Links</h2>
+          <h2 className="text-2xl font-semibold mb-6 border-b border-indigo-300 pb-2">Links</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="linkedin" className="block font-semibold mb-2">LinkedIn Profile</label>
-              <input id="linkedin" type="url" value={formData.linkedin} onChange={handleChange} placeholder="https://linkedin.com/in/yourprofile" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+              <label htmlFor="linkedin" className="block font-semibold mb-2">LinkedIn</label>
+              <input id="linkedin" type="url" value={formData.linkedin} onChange={handleChange} className="w-full border rounded-lg p-3" />
             </div>
             <div>
-              <label htmlFor="github" className="block font-semibold mb-2">GitHub Profile</label>
-              <input id="github" type="url" value={formData.github} onChange={handleChange} placeholder="https://github.com/yourusername" className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+              <label htmlFor="github" className="block font-semibold mb-2">GitHub</label>
+              <input id="github" type="url" value={formData.github} onChange={handleChange} className="w-full border rounded-lg p-3" />
             </div>
           </div>
         </section>
@@ -127,4 +179,3 @@ function App() {
 }
 
 export default App;
-
