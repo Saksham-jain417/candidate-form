@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import axios from 'axios';
+
 
 function App() {
   const [formData, setFormData] = useState({
@@ -90,7 +92,7 @@ function App() {
     setFormData((prev) => ({ ...prev, achievements: updated }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -99,26 +101,33 @@ function App() {
       return;
     }
 
-    const existing = JSON.parse(localStorage.getItem("submissions")) || [];
-    const updated = [...existing, formData];
-    localStorage.setItem("submissions", JSON.stringify(updated));
-    alert("Application submitted successfully!");
+    try {
+      const response = await axios.post('http://localhost:5000/api/form', formData);
+      alert("Form submitted successfully!");
+      console.log("Server response:", response.data);
 
-    // Reset form
-    setFormData({
-      fullName: "",
-      email: "",
-      phone: "",
-      portfolio: "",
-      trigram: "",
-      summary: "",
-      experiences: [{ years: "", skills: "", details: "", projects: [""] }],
-      education: [{ degree: "", institution: "", duration: "" }],
-      achievements: [""],
-      linkedin: "",
-      github: "",
-    });
+      // Reset form
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        portfolio: "",
+        trigram: "",
+        summary: "",
+        experiences: [{ years: "", skills: "", details: "", projects: [""] }],
+        education: [{ degree: "", institution: "", duration: "" }],
+        achievements: [""],
+        linkedin: "",
+        github: "",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Something went wrong while submitting the form.");
+    }
   };
+
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-indigo-100 flex items-center justify-center p-6">
