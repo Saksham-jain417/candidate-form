@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import axios from 'axios';
 
 function App() {
   const [formData, setFormData] = useState({
@@ -15,51 +16,50 @@ function App() {
     github: "",
   });
 
-  // Autofill based on trigram
-  useEffect(() => {
-    if (formData.trigram.length === 3) {
-      const savedData = localStorage.getItem(formData.trigram.toUpperCase());
-      if (savedData) {
-        setFormData(JSON.parse(savedData));
-        alert("Data auto-filled based on trigram!");
-      }
-    }
-  }, [formData.trigram]);
-
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+
+    if (id === "trigram") {
+      const savedData = localStorage.getItem(value.trim());
+      if (savedData) {
+        setFormData(JSON.parse(savedData));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [id]: value,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [id]: value,
+      }));
+    }
   };
 
   const handleExperienceChange = (index, field, value) => {
-    const updatedExperiences = [...formData.experiences];
-    updatedExperiences[index][field] = value;
-    setFormData((prev) => ({ ...prev, experiences: updatedExperiences }));
+    const updated = [...formData.experiences];
+    updated[index][field] = value;
+    setFormData((prev) => ({ ...prev, experiences: updated }));
   };
 
   const handleProjectChange = (expIndex, projIndex, value) => {
-    const updatedExperiences = [...formData.experiences];
-    updatedExperiences[expIndex].projects[projIndex] = value;
-    setFormData((prev) => ({ ...prev, experiences: updatedExperiences }));
+    const updated = [...formData.experiences];
+    updated[expIndex].projects[projIndex] = value;
+    setFormData((prev) => ({ ...prev, experiences: updated }));
   };
 
   const addExperience = () => {
     setFormData((prev) => ({
       ...prev,
-      experiences: [
-        ...prev.experiences,
-        { years: "", skills: "", details: "", projects: [""] },
-      ],
+      experiences: [...prev.experiences, { years: "", skills: "", details: "", projects: [""] }],
     }));
   };
 
   const addProject = (expIndex) => {
-    const updatedExperiences = [...formData.experiences];
-    updatedExperiences[expIndex].projects.push("");
-    setFormData((prev) => ({ ...prev, experiences: updatedExperiences }));
+    const updated = [...formData.experiences];
+    updated[expIndex].projects.push("");
+    setFormData((prev) => ({ ...prev, experiences: updated }));
   };
 
   const addEducation = () => {
@@ -97,28 +97,35 @@ function App() {
       return;
     }
 
-    // Save to local storage using trigram
-    if (formData.trigram.length === 3) {
-      localStorage.setItem(formData.trigram.toUpperCase(), JSON.stringify(formData));
+    try {
+      await axios.post('http://localhost:5000/api/form', formData);
+
+      // ✅ Save to localStorage using trigram
+      if (formData.trigram.trim()) {
+        localStorage.setItem(formData.trigram.trim(), JSON.stringify(formData));
+      }
+
+      alert("Form submitted successfully!");
+
+      // Reset
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        portfolio: "",
+        trigram: "",
+        summary: "",
+        experiences: [{ years: "", skills: "", details: "", projects: [""] }],
+        education: [{ degree: "", institution: "", duration: "" }],
+        achievements: [""],
+        linkedin: "",
+        github: "",
+      });
+
+    } catch (error) {
+      console.error("Submission failed:", error);
+      alert("Error submitting form.");
     }
-
-    alert("Form submitted successfully!");
-    console.log("Saved locally:", formData);
-
-    // Reset form
-    setFormData({
-      fullName: "",
-      email: "",
-      phone: "",
-      portfolio: "",
-      trigram: "",
-      summary: "",
-      experiences: [{ years: "", skills: "", details: "", projects: [""] }],
-      education: [{ degree: "", institution: "", duration: "" }],
-      achievements: [""],
-      linkedin: "",
-      github: "",
-    });
   };
 
   return (
@@ -126,7 +133,7 @@ function App() {
       <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-xl p-10 max-w-5xl w-full">
         <h1 className="text-4xl font-extrabold mb-8 text-center text-indigo-700">Candidate Application Form</h1>
 
-        {/* Personal Info */}
+        {/* Personal Information */}
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Personal Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -159,7 +166,7 @@ function App() {
           ))}
         </section>
 
-        {/* Experience */}
+        {/* Experience & Projects */}
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2 flex justify-between">
             Experience & Projects
@@ -189,7 +196,7 @@ function App() {
           ))}
         </section>
 
-        {/* Links */}
+        {/* Social Links */}
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Social Links</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
