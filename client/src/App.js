@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-import axios from 'axios';
-
+import React, { useState, useEffect } from "react";
 
 function App() {
   const [formData, setFormData] = useState({
@@ -10,25 +8,23 @@ function App() {
     portfolio: "",
     trigram: "",
     summary: "",
-    experiences: [
-      {
-        years: "",
-        skills: "",
-        details: "",
-        projects: [""],
-      },
-    ],
-    education: [
-      {
-        degree: "",
-        institution: "",
-        duration: "",
-      },
-    ],
+    experiences: [{ years: "", skills: "", details: "", projects: [""] }],
+    education: [{ degree: "", institution: "", duration: "" }],
     achievements: [""],
     linkedin: "",
     github: "",
   });
+
+  // Autofill based on trigram
+  useEffect(() => {
+    if (formData.trigram.length === 3) {
+      const savedData = localStorage.getItem(formData.trigram.toUpperCase());
+      if (savedData) {
+        setFormData(JSON.parse(savedData));
+        alert("Data auto-filled based on trigram!");
+      }
+    }
+  }, [formData.trigram]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -101,33 +97,29 @@ function App() {
       return;
     }
 
-    try {
-      const response = await axios.post('http://localhost:5000/api/form', formData);
-      alert("Form submitted successfully!");
-      console.log("Server response:", response.data);
-
-      // Reset form
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        portfolio: "",
-        trigram: "",
-        summary: "",
-        experiences: [{ years: "", skills: "", details: "", projects: [""] }],
-        education: [{ degree: "", institution: "", duration: "" }],
-        achievements: [""],
-        linkedin: "",
-        github: "",
-      });
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("Something went wrong while submitting the form.");
+    // Save to local storage using trigram
+    if (formData.trigram.length === 3) {
+      localStorage.setItem(formData.trigram.toUpperCase(), JSON.stringify(formData));
     }
+
+    alert("Form submitted successfully!");
+    console.log("Saved locally:", formData);
+
+    // Reset form
+    setFormData({
+      fullName: "",
+      email: "",
+      phone: "",
+      portfolio: "",
+      trigram: "",
+      summary: "",
+      experiences: [{ years: "", skills: "", details: "", projects: [""] }],
+      education: [{ degree: "", institution: "", duration: "" }],
+      achievements: [""],
+      linkedin: "",
+      github: "",
+    });
   };
-
-
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-indigo-100 flex items-center justify-center p-6">
@@ -215,3 +207,4 @@ function App() {
 }
 
 export default App;
+
