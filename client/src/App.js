@@ -1,4 +1,4 @@
-// Enhanced App.js with remove buttons for experience, projects, achievements
+// Enhanced App.js with full sections, validation, and UI improvements
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -50,6 +50,19 @@ function App() {
     } else {
       setFormData((prev) => ({ ...prev, [id]: value }));
     }
+  };
+
+  const handleEducationChange = (level, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      education: {
+        ...prev.education,
+        [level]: {
+          ...prev.education[level],
+          [field]: value,
+        },
+      },
+    }));
   };
 
   const updateArrayField = (section, index, field, value) => {
@@ -111,7 +124,7 @@ function App() {
           Candidate Application Form
         </h1>
 
-        {/* Trigram first */}
+        {/* Trigram */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Trigram *</label>
           <input
@@ -120,86 +133,25 @@ function App() {
             value={formData.trigram}
             onChange={handleChange}
             className={`w-full border p-3 rounded-lg ${!isValid(formData.trigram) ? 'bg-red-100' : 'bg-green-100'}`}
-            placeholder="Enter your trigram first"
+            placeholder="Enter your trigram"
           />
         </div>
 
         {/* Personal Info */}
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Personal Information</h2>
-
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Full Name *</label>
-            <input
-              id="fullName"
-              type="text"
-              value={formData.fullName}
-              onChange={handleChange}
-              className={`w-full border p-3 rounded-lg ${!isValid(formData.fullName) ? "bg-red-100" : "bg-green-100"}`}
-              placeholder="Enter your name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Email *</label>
-            <input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              className={`w-full border p-3 rounded-lg ${!emailValid(formData.email) ? "bg-red-100" : "bg-green-100"}`}
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Phone</label>
-            <input
-              id="phone"
-              type="text"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full border p-3 rounded-lg"
-              placeholder="+91 98765 43210"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">Portfolio</label>
-            <input
-              id="portfolio"
-              type="text"
-              value={formData.portfolio}
-              onChange={handleChange}
-              className="w-full border p-3 rounded-lg"
-              placeholder="https://yourportfolio.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">LinkedIn</label>
-            <input
-              id="linkedin"
-              type="text"
-              value={formData.linkedin}
-              onChange={handleChange}
-              className="w-full border p-3 rounded-lg"
-              placeholder="https://linkedin.com/in/yourprofile"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-700 mb-1">GitHub</label>
-            <input
-              id="github"
-              type="text"
-              value={formData.github}
-              onChange={handleChange}
-              className="w-full border p-3 rounded-lg"
-              placeholder="https://github.com/yourhandle"
-            />
-          </div>
-
+          {['fullName', 'email', 'phone', 'portfolio', 'linkedin', 'github'].map((field) => (
+            <div key={field}>
+              <label className="block text-sm text-gray-700 mb-1 capitalize">{field.replace(/([A-Z])/g, ' $1')} {['fullName', 'email'].includes(field) && '*'}</label>
+              <input
+                id={field}
+                type="text"
+                value={formData[field]}
+                onChange={handleChange}
+                className={`w-full border p-3 rounded-lg ${field === 'email' ? (emailValid(formData.email) ? 'bg-green-100' : 'bg-red-100') : isValid(formData[field]) ? 'bg-green-100' : 'bg-red-100'}`}
+              />
+            </div>
+          ))}
           <div>
             <label className="block text-sm text-gray-700 mb-1">Summary</label>
             <textarea
@@ -213,95 +165,105 @@ function App() {
           </div>
         </section>
 
-
-        {/* Education section remains */}
-
-        {/* Experiences */}
+        {/* Education */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Work Experience</h2>
-          {formData.experiences.map((exp, i) => (
-            <div key={i} className="border p-4 rounded space-y-2">
-              {["designation", "duration", "company", "summary"].map((field) => (
+          <h2 className="text-2xl font-semibold">Education</h2>
+          {Object.entries(formData.education).map(([level, data]) => (
+            <div key={level} className="bg-gray-50 p-4 rounded-lg space-y-2">
+              <h3 className="text-lg font-medium capitalize">{level.replace(/([A-Z])/g, ' $1')}</h3>
+              {Object.entries(data).map(([field, value]) => (
                 <div key={field}>
                   <label className="block text-sm text-gray-700 capitalize">{field}</label>
                   <input
-                    value={exp[field]}
-                    onChange={(e) => updateArrayField("experiences", i, field, e.target.value)}
+                    type="text"
+                    value={value}
+                    onChange={(e) => handleEducationChange(level, field, e.target.value)}
                     className="w-full border p-2 rounded"
                   />
                 </div>
               ))}
-              <button
-                type="button"
-                onClick={() => removeItem("experiences", i)}
-                className="bg-red-500 text-white px-4 py-1 rounded mt-2"
-              >Remove</button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() => addItem("experiences", { designation: "", duration: "", company: "", summary: "", projects: [""] })}
-            className="bg-indigo-600 text-white px-4 py-2 rounded"
-          >Add Experience</button>
+        </section>
+
+        {/* Experiences */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">Experience</h2>
+          {formData.experiences.map((exp, idx) => (
+            <div key={idx} className="bg-gray-50 p-4 rounded-lg space-y-2">
+              {['designation', 'duration', 'company', 'summary'].map((field) => (
+                <div key={field}>
+                  <label className="block text-sm text-gray-700 capitalize">{field}</label>
+                  <input
+                    type="text"
+                    value={exp[field]}
+                    onChange={(e) => updateArrayField('experiences', idx, field, e.target.value)}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="block text-sm text-gray-700">Projects</label>
+                {exp.projects.map((proj, pIdx) => (
+                  <input
+                    key={pIdx}
+                    type="text"
+                    value={proj}
+                    onChange={(e) => {
+                      const updated = [...formData.experiences];
+                      updated[idx].projects[pIdx] = e.target.value;
+                      setFormData((prev) => ({ ...prev, experiences: updated }));
+                    }}
+                    className="w-full border p-2 rounded my-1"
+                  />
+                ))}
+              </div>
+              <button type="button" onClick={() => removeItem('experiences', idx)} className="text-red-600 text-sm">Remove Experience</button>
+            </div>
+          ))}
+          <button type="button" onClick={() => addItem('experiences', { designation: '', duration: '', company: '', summary: '', projects: [''] })} className="text-blue-600 text-sm">Add Experience</button>
         </section>
 
         {/* Projects */}
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Projects</h2>
-          {formData.projects.map((proj, i) => (
-            <div key={i} className="border p-4 rounded space-y-2">
-              {["title", "technologies", "summary", "link"].map((field) => (
+          {formData.projects.map((proj, idx) => (
+            <div key={idx} className="bg-gray-50 p-4 rounded-lg space-y-2">
+              {['title', 'technologies', 'summary', 'link'].map((field) => (
                 <div key={field}>
                   <label className="block text-sm text-gray-700 capitalize">{field}</label>
                   <input
+                    type="text"
                     value={proj[field]}
-                    onChange={(e) => updateArrayField("projects", i, field, e.target.value)}
+                    onChange={(e) => updateArrayField('projects', idx, field, e.target.value)}
                     className="w-full border p-2 rounded"
                   />
                 </div>
               ))}
-              <button
-                type="button"
-                onClick={() => removeItem("projects", i)}
-                className="bg-red-500 text-white px-4 py-1 rounded mt-2"
-              >Remove</button>
+              <button type="button" onClick={() => removeItem('projects', idx)} className="text-red-600 text-sm">Remove Project</button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() => addItem("projects", { title: "", technologies: "", summary: "", link: "" })}
-            className="bg-indigo-600 text-white px-4 py-2 rounded"
-          >Add Project</button>
+          <button type="button" onClick={() => addItem('projects', { title: '', technologies: '', summary: '', link: '' })} className="text-blue-600 text-sm">Add Project</button>
         </section>
 
         {/* Achievements */}
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Achievements</h2>
-          {formData.achievements.map((a, i) => (
-            <div key={i} className="flex gap-4 items-center">
+          {formData.achievements.map((ach, idx) => (
+            <div key={idx} className="flex gap-2 items-center">
               <input
-                value={a}
-                onChange={(e) => updateSimpleArray("achievements", i, e.target.value)}
+                type="text"
+                value={ach}
+                onChange={(e) => updateSimpleArray('achievements', idx, e.target.value)}
                 className="w-full border p-2 rounded"
               />
-              <button
-                type="button"
-                onClick={() => removeItem("achievements", i)}
-                className="bg-red-500 text-white px-3 py-1 rounded"
-              >Remove</button>
+              <button type="button" onClick={() => removeItem('achievements', idx)} className="text-red-600 text-sm">Remove</button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() => addItem("achievements", "")}
-            className="bg-indigo-600 text-white px-4 py-2 rounded"
-          >Add Achievement</button>
+          <button type="button" onClick={() => addItem('achievements', '')} className="text-blue-600 text-sm">Add Achievement</button>
         </section>
 
-        <button
-          type="submit"
-          className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700"
-        >
+        <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">
           Submit Application
         </button>
       </form>
@@ -310,5 +272,7 @@ function App() {
 }
 
 export default App;
+
+
 
 
