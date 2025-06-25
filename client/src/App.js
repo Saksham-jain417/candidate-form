@@ -1,5 +1,6 @@
+// Redesigned App.js for professional candidate form with all previous enhancements
 import React, { useState } from "react";
-import axios from 'axios';
+import axios from "axios";
 
 function App() {
   const [formData, setFormData] = useState({
@@ -13,204 +14,293 @@ function App() {
       secondary: { school: "", board: "", year: "" },
       seniorSecondary: { school: "", board: "", year: "" },
       graduation: { degree: "", institution: "", year: "" },
-      postGraduation: { degree: "", institution: "", year: "" }
+      postGraduation: { degree: "", institution: "", year: "" },
     },
-    experiences: [{ years: "", skills: "", details: "", projects: [""] }],
+    experiences: [
+      {
+        designation: "",
+        duration: "",
+        company: "",
+        summary: "",
+        projects: [""],
+      },
+    ],
+    projects: [
+      {
+        title: "",
+        technologies: "",
+        summary: "",
+        link: "",
+      },
+    ],
     achievements: [""],
     linkedin: "",
-    github: ""
+    github: "",
   });
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-
     if (id === "trigram") {
-      const savedData = localStorage.getItem(value.trim());
-      if (savedData) {
-        setFormData(JSON.parse(savedData));
+      const saved = localStorage.getItem(value.trim());
+      if (saved) {
+        setFormData(JSON.parse(saved));
       } else {
-        setFormData((prev) => ({
-          ...prev,
-          [id]: value,
-        }));
+        setFormData((prev) => ({ ...prev, [id]: value }));
       }
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [id]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [id]: value }));
     }
   };
 
-  const handleEducationChange = (level, field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      education: {
-        ...prev.education,
-        [level]: {
-          ...prev.education[level],
-          [field]: value
-        }
-      }
-    }));
-  };
-
-  const handleExperienceChange = (index, field, value) => {
-    const updated = [...formData.experiences];
+  const updateArrayField = (section, index, field, value) => {
+    const updated = [...formData[section]];
     updated[index][field] = value;
-    setFormData((prev) => ({ ...prev, experiences: updated }));
+    setFormData((prev) => ({ ...prev, [section]: updated }));
   };
 
-  const handleProjectChange = (expIndex, projIndex, value) => {
-    const updated = [...formData.experiences];
-    updated[expIndex].projects[projIndex] = value;
-    setFormData((prev) => ({ ...prev, experiences: updated }));
-  };
-
-  const addExperience = () => {
-    setFormData((prev) => ({
-      ...prev,
-      experiences: [...prev.experiences, { years: "", skills: "", details: "", projects: [""] }]
-    }));
-  };
-
-  const addProject = (expIndex) => {
-    const updated = [...formData.experiences];
-    updated[expIndex].projects.push("");
-    setFormData((prev) => ({ ...prev, experiences: updated }));
-  };
-
-  const addAchievement = () => {
-    setFormData((prev) => ({
-      ...prev,
-      achievements: [...prev.achievements, ""]
-    }));
-  };
-
-  const handleAchievementChange = (index, value) => {
-    const updated = [...formData.achievements];
+  const updateSimpleArray = (section, index, value) => {
+    const updated = [...formData[section]];
     updated[index] = value;
-    setFormData((prev) => ({ ...prev, achievements: updated }));
+    setFormData((prev) => ({ ...prev, [section]: updated }));
+  };
+
+  const addItem = (section, template) => {
+    setFormData((prev) => ({ ...prev, [section]: [...prev[section], template] }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.fullName || !formData.trigram || !formData.email) {
       alert("Full Name, Trigram, and Email are mandatory.");
       return;
     }
-
     if (!emailRegex.test(formData.email)) {
-      alert("Please enter a valid email address.");
+      alert("Please enter a valid email.");
       return;
     }
-
     try {
-      await axios.post('http://localhost:5000/api/form', formData);
+      await axios.post("http://localhost:5000/api/form", formData);
       if (formData.trigram.trim()) {
         localStorage.setItem(formData.trigram.trim(), JSON.stringify(formData));
       }
-      alert("Form submitted successfully!");
+      alert("Form submitted!");
       window.location.reload();
-    } catch (error) {
-      console.error("Submission failed:", error);
-      alert("Error submitting form.");
+    } catch (err) {
+      console.error(err);
+      alert("Submission failed.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-indigo-100 flex items-center justify-center p-6">
-      <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-xl p-10 max-w-5xl w-full space-y-6 overflow-y-auto">
-        <h1 className="text-4xl font-extrabold mb-4 text-center text-indigo-700">Candidate Application Form</h1>
+    <div className="min-h-screen bg-gray-100 py-10 px-6">
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl p-10 space-y-8"
+      >
+        <h1 className="text-4xl font-bold text-center text-indigo-700">
+          Professional Candidate Application
+        </h1>
 
         {/* Personal Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">Personal Information</h2>
           {[
-            { id: "fullName", label: "Full Name *", placeholder: "Enter your name" },
-            { id: "email", label: "Email *", placeholder: "you@example.com", type: "email" },
-            { id: "phone", label: "Phone Number", placeholder: "+91 98765 43210" },
-            { id: "portfolio", label: "Portfolio URL", placeholder: "https://yourportfolio.com" },
-            { id: "linkedin", label: "LinkedIn URL", placeholder: "https://linkedin.com/in/yourname" },
-            { id: "github", label: "GitHub URL", placeholder: "https://github.com/yourname" },
-          ].map(({ id, label, placeholder, type = "text" }) => (
+            { id: "fullName", label: "Full Name *" },
+            { id: "email", label: "Email *", type: "email" },
+            { id: "phone", label: "Phone Number" },
+            { id: "portfolio", label: "Portfolio URL" },
+            { id: "linkedin", label: "LinkedIn URL" },
+            { id: "github", label: "GitHub URL" },
+            { id: "trigram", label: "Trigram *" },
+          ].map(({ id, label, type = "text" }) => (
             <div key={id}>
-              <label className="block font-medium text-sm text-gray-700">{label}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
               <input
                 id={id}
                 type={type}
                 value={formData[id]}
                 onChange={handleChange}
-                className="p-3 border rounded-lg w-full"
-                placeholder={placeholder}
+                className="w-full border p-3 rounded-lg"
               />
             </div>
           ))}
-          <div className="md:col-span-2">
-            <label className="block font-medium text-sm text-gray-700">Trigram *</label>
-            <input
-              id="trigram"
-              value={formData.trigram}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Summary</label>
+            <textarea
+              id="summary"
+              rows="4"
+              value={formData.summary}
               onChange={handleChange}
-              className="p-3 border rounded-lg w-full"
-              placeholder="ABC"
-            />
+              className="w-full border p-3 rounded-lg"
+            ></textarea>
           </div>
-        </div>
-
-        {/* Summary */}
-        <div>
-          <label className="block font-medium text-sm text-gray-700">Summary</label>
-          <textarea id="summary" rows="3" value={formData.summary} onChange={handleChange} className="w-full border rounded-lg p-3" placeholder="Tell us about yourself..." />
-        </div>
+        </section>
 
         {/* Education */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Education *</h2>
-          {Object.entries(formData.education).map(([level, info]) => (
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">Education</h2>
+          {Object.entries(formData.education).map(([level, fields]) => (
             <div key={level} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input placeholder={`${level[0].toUpperCase() + level.slice(1)} - School/College`} value={info.school || info.degree || ""} onChange={(e) => handleEducationChange(level, info.school !== undefined ? 'school' : 'degree', e.target.value)} className="p-3 border rounded-lg" />
-              <input placeholder="Board/Institution" value={info.board || info.institution || ""} onChange={(e) => handleEducationChange(level, info.board !== undefined ? 'board' : 'institution', e.target.value)} className="p-3 border rounded-lg" />
-              <input placeholder="Year" value={info.year || ""} onChange={(e) => handleEducationChange(level, 'year', e.target.value)} className="p-3 border rounded-lg" />
-            </div>
-          ))}
-        </div>
-
-        {/* Experiences */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Experience</h2>
-          {formData.experiences.map((exp, i) => (
-            <div key={i} className="space-y-2 border p-4 rounded-lg bg-gray-50">
-              <input placeholder="Years (e.g., 2)" value={exp.years} onChange={(e) => handleExperienceChange(i, 'years', e.target.value)} className="p-2 border rounded-lg w-full" />
-              <input placeholder="Skills used (comma-separated)" value={exp.skills} onChange={(e) => handleExperienceChange(i, 'skills', e.target.value)} className="p-2 border rounded-lg w-full" />
-              <input placeholder="Details" value={exp.details} onChange={(e) => handleExperienceChange(i, 'details', e.target.value)} className="p-2 border rounded-lg w-full" />
-              {exp.projects.map((proj, j) => (
-                <input key={j} placeholder={`Project ${j + 1}`} value={proj} onChange={(e) => handleProjectChange(i, j, e.target.value)} className="p-2 border rounded-lg w-full my-1" />
+              {Object.entries(fields).map(([field, value]) => (
+                <div key={field}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{`${level} - ${field}`}</label>
+                  <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        education: {
+                          ...prev.education,
+                          [level]: {
+                            ...prev.education[level],
+                            [field]: e.target.value,
+                          },
+                        },
+                      }));
+                    }}
+                    className="w-full border p-3 rounded-lg"
+                  />
+                </div>
               ))}
-              <button type="button" onClick={() => addProject(i)} className="text-sm text-indigo-600 underline">+ Add Project</button>
             </div>
           ))}
-          <button type="button" onClick={addExperience} className="text-sm text-indigo-600 underline">+ Add Experience</button>
-        </div>
+        </section>
+
+        {/* Experience */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">Work Experience</h2>
+          {formData.experiences.map((exp, index) => (
+            <div key={index} className="space-y-2 border rounded-lg p-4">
+              {["designation", "company", "duration", "summary"].map((field) => (
+                <div key={field}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    value={exp[field]}
+                    onChange={(e) => updateArrayField("experiences", index, field, e.target.value)}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Projects in this role</label>
+                {exp.projects.map((proj, projIndex) => (
+                  <input
+                    key={projIndex}
+                    type="text"
+                    value={proj}
+                    onChange={(e) => {
+                      const updated = [...formData.experiences];
+                      updated[index].projects[projIndex] = e.target.value;
+                      setFormData({ ...formData, experiences: updated });
+                    }}
+                    className="w-full border p-2 rounded mb-2"
+                  />
+                ))}
+                <button
+                  type="button"
+                  className="text-sm text-indigo-600 hover:underline"
+                  onClick={() => {
+                    const updated = [...formData.experiences];
+                    updated[index].projects.push("");
+                    setFormData({ ...formData, experiences: updated });
+                  }}
+                >
+                  + Add Project
+                </button>
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="text-sm text-indigo-600 hover:underline"
+            onClick={() =>
+              addItem("experiences", {
+                designation: "",
+                duration: "",
+                company: "",
+                summary: "",
+                projects: [""],
+              })
+            }
+          >
+            + Add Experience
+          </button>
+        </section>
+
+        {/* Projects */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">Personal Projects</h2>
+          {formData.projects.map((proj, index) => (
+            <div key={index} className="space-y-2 border rounded-lg p-4">
+              {["title", "technologies", "summary", "link"].map((field) => (
+                <div key={field}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    value={proj[field]}
+                    onChange={(e) => updateArrayField("projects", index, field, e.target.value)}
+                    className="w-full border p-2 rounded"
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+          <button
+            type="button"
+            className="text-sm text-indigo-600 hover:underline"
+            onClick={() =>
+              addItem("projects", {
+                title: "",
+                technologies: "",
+                summary: "",
+                link: "",
+              })
+            }
+          >
+            + Add Project
+          </button>
+        </section>
 
         {/* Achievements */}
-        <div className="space-y-2">
+        <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Achievements</h2>
-          {formData.achievements.map((a, i) => (
-            <input key={i} placeholder={`Achievement ${i + 1}`} value={a} onChange={(e) => handleAchievementChange(i, e.target.value)} className="p-2 border rounded-lg w-full" />
+          {formData.achievements.map((ach, index) => (
+            <div key={index}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Achievement #{index + 1}</label>
+              <input
+                type="text"
+                value={ach}
+                onChange={(e) => updateSimpleArray("achievements", index, e.target.value)}
+                className="w-full border p-2 rounded"
+              />
+            </div>
           ))}
-          <button type="button" onClick={addAchievement} className="text-sm text-indigo-600 underline">+ Add Achievement</button>
-        </div>
-
-        <div className="pt-4">
-          <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">
-            Submit Application
+          <button
+            type="button"
+            className="text-sm text-indigo-600 hover:underline"
+            onClick={() => addItem("achievements", "")}
+          >
+            + Add Achievement
           </button>
-        </div>
+        </section>
+
+        <button
+          type="submit"
+          className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700"
+        >
+          Submit Application
+        </button>
       </form>
     </div>
   );
 }
 
 export default App;
+
