@@ -1,5 +1,6 @@
+// Enhanced App.js with mandatory field labels, validation, education levels, and UI improvements
 import React, { useState } from "react";
-import axios from 'axios';
+import axios from "axios";
 
 function App() {
   const [formData, setFormData] = useState({
@@ -10,43 +11,60 @@ function App() {
     trigram: "",
     summary: "",
     experiences: [{ years: "", skills: "", details: "", projects: [""] }],
-    education: [{ degree: "", institution: "", duration: "" }],
+    education: [
+      { level: "Secondary", institution: "", duration: "" },
+      { level: "Senior Secondary", institution: "", duration: "" },
+      { level: "Graduation", institution: "", duration: "" },
+      { level: "Post Graduation", institution: "", duration: "" }
+    ],
     achievements: [""],
     linkedin: "",
     github: "",
   });
 
+  const [validation, setValidation] = useState({ email: true });
+
   const handleChange = (e) => {
     const { id, value } = e.target;
+    if (id === "email") {
+      const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      setValidation((prev) => ({ ...prev, email: isValid }));
+    }
 
     if (id === "trigram") {
-      const savedData = localStorage.getItem(value.trim());
-      if (savedData) {
-        setFormData(JSON.parse(savedData));
+      const saved = localStorage.getItem(value.trim());
+      if (saved) {
+        setFormData(JSON.parse(saved));
       } else {
-        setFormData((prev) => ({
-          ...prev,
-          [id]: value,
-        }));
+        setFormData((prev) => ({ ...prev, [id]: value }));
       }
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [id]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [id]: value }));
     }
   };
 
-  const handleExperienceChange = (index, field, value) => {
+  const handleExperienceChange = (i, field, value) => {
     const updated = [...formData.experiences];
-    updated[index][field] = value;
+    updated[i][field] = value;
     setFormData((prev) => ({ ...prev, experiences: updated }));
   };
 
-  const handleProjectChange = (expIndex, projIndex, value) => {
+  const handleProjectChange = (expIdx, projIdx, value) => {
     const updated = [...formData.experiences];
-    updated[expIndex].projects[projIndex] = value;
+    updated[expIdx].projects[projIdx] = value;
     setFormData((prev) => ({ ...prev, experiences: updated }));
+  };
+
+  const handleEducationChange = (index, field, value) => {
+    const updated = [...formData.education];
+    updated[index][field] = value;
+    setFormData((prev) => ({ ...prev, education: updated }));
+  };
+
+  const handleAchievementChange = (i, value) => {
+    const updated = [...formData.achievements];
+    updated[i] = value;
+    setFormData((prev) => ({ ...prev, achievements: updated }));
   };
 
   const addExperience = () => {
@@ -56,162 +74,104 @@ function App() {
     }));
   };
 
-  const addProject = (expIndex) => {
+  const addProject = (expIdx) => {
     const updated = [...formData.experiences];
-    updated[expIndex].projects.push("");
+    updated[expIdx].projects.push("");
     setFormData((prev) => ({ ...prev, experiences: updated }));
-  };
-
-  const addEducation = () => {
-    setFormData((prev) => ({
-      ...prev,
-      education: [...prev.education, { degree: "", institution: "", duration: "" }],
-    }));
-  };
-
-  const handleEducationChange = (index, field, value) => {
-    const updated = [...formData.education];
-    updated[index][field] = value;
-    setFormData((prev) => ({ ...prev, education: updated }));
   };
 
   const addAchievement = () => {
     setFormData((prev) => ({
       ...prev,
-      achievements: [...prev.achievements, ""],
+      achievements: [...prev.achievements, ""]
     }));
-  };
-
-  const handleAchievementChange = (index, value) => {
-    const updated = [...formData.achievements];
-    updated[index] = value;
-    setFormData((prev) => ({ ...prev, achievements: updated }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
+    if (!validation.email) {
       alert("Please enter a valid email address.");
       return;
     }
-
     try {
-      await axios.post('http://localhost:5000/api/form', formData);
-
-      // ✅ Save to localStorage using trigram
+      await axios.post("http://localhost:5000/api/form", formData);
       if (formData.trigram.trim()) {
         localStorage.setItem(formData.trigram.trim(), JSON.stringify(formData));
       }
-
       alert("Form submitted successfully!");
-
-      // Reset
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        portfolio: "",
-        trigram: "",
-        summary: "",
-        experiences: [{ years: "", skills: "", details: "", projects: [""] }],
-        education: [{ degree: "", institution: "", duration: "" }],
-        achievements: [""],
-        linkedin: "",
-        github: "",
-      });
-
-    } catch (error) {
-      console.error("Submission failed:", error);
-      alert("Error submitting form.");
+      window.location.reload();
+    } catch (err) {
+      console.error("Submission error:", err);
+      alert("Error submitting form");
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-indigo-100 flex items-center justify-center p-6">
-      <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-xl p-10 max-w-5xl w-full">
-        <h1 className="text-4xl font-extrabold mb-8 text-center text-indigo-700">Candidate Application Form</h1>
+      <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-xl p-10 max-w-5xl w-full space-y-8">
+        <h1 className="text-4xl font-extrabold text-center text-indigo-700">Candidate Application Form</h1>
 
         {/* Personal Information */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Personal Information</h2>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Personal Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input id="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="p-3 border rounded-lg" />
-            <input id="email" type="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className="p-3 border rounded-lg" />
-            <input id="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} className="p-3 border rounded-lg" />
-            <input id="portfolio" placeholder="Portfolio Link" value={formData.portfolio} onChange={handleChange} className="p-3 border rounded-lg" />
-            <input id="trigram" placeholder="Trigram (Unique Code)" value={formData.trigram} onChange={handleChange} className="p-3 border rounded-lg md:col-span-2" />
+            <div>
+              <label className="block font-medium mb-1">Full Name <span className="text-red-500">*</span></label>
+              <input id="fullName" value={formData.fullName} onChange={handleChange} placeholder="John Doe" className="p-3 border rounded-lg w-full" required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Email <span className="text-red-500">*</span></label>
+              <input id="email" value={formData.email} onChange={handleChange} type="email" placeholder="john@example.com" className={`p-3 rounded-lg w-full border ${validation.email ? "border-green-400" : "border-red-500"}`} required />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Phone</label>
+              <input id="phone" value={formData.phone} onChange={handleChange} placeholder="+91 1234567890" className="p-3 border rounded-lg w-full" />
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Portfolio</label>
+              <input id="portfolio" value={formData.portfolio} onChange={handleChange} placeholder="https://yourportfolio.com" className="p-3 border rounded-lg w-full" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block font-medium mb-1">Trigram <span className="text-red-500">*</span></label>
+              <input id="trigram" value={formData.trigram} onChange={handleChange} placeholder="Enter trigram" className="p-3 border rounded-lg w-full" required />
+            </div>
           </div>
-        </section>
-
-        {/* Summary */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Brief Summary</h2>
-          <textarea id="summary" rows="3" placeholder="Tell us about yourself..." value={formData.summary} onChange={handleChange} className="w-full border rounded-lg p-3" />
         </section>
 
         {/* Education */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 flex justify-between">
-            Education
-            <button type="button" onClick={addEducation} className="text-white bg-indigo-600 px-3 py-1 rounded hover:bg-indigo-700">+ Add</button>
-          </h2>
-          {formData.education.map((edu, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <input placeholder="Degree" value={edu.degree} onChange={(e) => handleEducationChange(index, "degree", e.target.value)} className="p-3 border rounded-lg" />
-              <input placeholder="Institution" value={edu.institution} onChange={(e) => handleEducationChange(index, "institution", e.target.value)} className="p-3 border rounded-lg" />
-              <input placeholder="Duration (e.g. 2020-2024)" value={edu.duration} onChange={(e) => handleEducationChange(index, "duration", e.target.value)} className="p-3 border rounded-lg" />
-            </div>
-          ))}
-        </section>
-
-        {/* Experience & Projects */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 flex justify-between">
-            Experience & Projects
-            <button type="button" onClick={addExperience} className="text-white bg-indigo-600 px-3 py-1 rounded hover:bg-indigo-700">+ Add</button>
-          </h2>
-          {formData.experiences.map((exp, i) => (
-            <div key={i} className="border border-gray-300 p-4 rounded-lg mb-6">
-              <input placeholder="Years of Experience" type="number" value={exp.years} onChange={(e) => handleExperienceChange(i, "years", e.target.value)} className="p-3 border rounded-lg w-full mb-4" />
-              <input placeholder="Key Skills" value={exp.skills} onChange={(e) => handleExperienceChange(i, "skills", e.target.value)} className="p-3 border rounded-lg w-full mb-4" />
-              <textarea placeholder="Experience Details" rows="3" value={exp.details} onChange={(e) => handleExperienceChange(i, "details", e.target.value)} className="p-3 border rounded-lg w-full mb-4" />
-              {exp.projects.map((proj, j) => (
-                <input key={j} placeholder={`Project ${j + 1}`} value={proj} onChange={(e) => handleProjectChange(i, j, e.target.value)} className="p-3 border rounded-lg w-full mb-2" />
-              ))}
-              <button type="button" onClick={() => addProject(i)} className="text-sm bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">+ Add Project</button>
-            </div>
-          ))}
-        </section>
-
-        {/* Achievements */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2 flex justify-between">
-            Achievements & Certifications
-            <button type="button" onClick={addAchievement} className="text-white bg-indigo-600 px-3 py-1 rounded hover:bg-indigo-700">+ Add</button>
-          </h2>
-          {formData.achievements.map((ach, i) => (
-            <input key={i} placeholder={`Achievement or Certification ${i + 1}`} value={ach} onChange={(e) => handleAchievementChange(i, e.target.value)} className="p-3 border rounded-lg w-full mb-4" />
-          ))}
-        </section>
-
-        {/* Social Links */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Social Links</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input id="linkedin" placeholder="LinkedIn Profile URL" value={formData.linkedin} onChange={handleChange} className="p-3 border rounded-lg" />
-            <input id="github" placeholder="GitHub Profile URL" value={formData.github} onChange={handleChange} className="p-3 border rounded-lg" />
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Education Details <span className="text-red-500">*</span></h2>
+          <div className="space-y-4">
+            {formData.education.map((edu, i) => (
+              <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-medium mb-1">{edu.level}</label>
+                  <input value={edu.institution} onChange={(e) => handleEducationChange(i, "institution", e.target.value)} placeholder="Institution" className="p-3 border rounded-lg w-full" required />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Duration</label>
+                  <input value={edu.duration} onChange={(e) => handleEducationChange(i, "duration", e.target.value)} type="text" placeholder="e.g. 2020-2024" className="p-3 border rounded-lg w-full" required />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Degree</label>
+                  <input value={edu.degree} onChange={(e) => handleEducationChange(i, "degree", e.target.value)} placeholder="e.g. B.Tech" className="p-3 border rounded-lg w-full" required />
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">
-          Submit Application
-        </button>
+        {/* Submit Button */}
+        <div>
+          <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">
+            Submit Application
+          </button>
+        </div>
       </form>
     </div>
   );
 }
 
 export default App;
+
 
