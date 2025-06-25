@@ -97,6 +97,11 @@ function App() {
     e.preventDefault();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.fullName || !formData.trigram || !formData.email) {
+      alert("Full Name, Trigram, and Email are mandatory.");
+      return;
+    }
+
     if (!emailRegex.test(formData.email)) {
       alert("Please enter a valid email address.");
       return;
@@ -108,24 +113,7 @@ function App() {
         localStorage.setItem(formData.trigram.trim(), JSON.stringify(formData));
       }
       alert("Form submitted successfully!");
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        portfolio: "",
-        trigram: "",
-        summary: "",
-        education: {
-          secondary: { school: "", board: "", year: "" },
-          seniorSecondary: { school: "", board: "", year: "" },
-          graduation: { degree: "", institution: "", year: "" },
-          postGraduation: { degree: "", institution: "", year: "" }
-        },
-        experiences: [{ years: "", skills: "", details: "", projects: [""] }],
-        achievements: [""],
-        linkedin: "",
-        github: ""
-      });
+      window.location.reload();
     } catch (error) {
       console.error("Submission failed:", error);
       alert("Error submitting form.");
@@ -134,30 +122,40 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-indigo-100 flex items-center justify-center p-6">
-      <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-xl p-10 max-w-5xl w-full space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-xl p-10 max-w-5xl w-full space-y-6 overflow-y-auto">
         <h1 className="text-4xl font-extrabold mb-4 text-center text-indigo-700">Candidate Application Form</h1>
 
         {/* Personal Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block font-medium text-sm text-gray-700">Full Name *</label>
-            <input id="fullName" value={formData.fullName} onChange={handleChange} className="p-3 border rounded-lg w-full" placeholder="Enter your name" />
-          </div>
-          <div>
-            <label className="block font-medium text-sm text-gray-700">Email *</label>
-            <input id="email" type="email" value={formData.email} onChange={handleChange} className="p-3 border rounded-lg w-full" placeholder="you@example.com" />
-          </div>
-          <div>
-            <label className="block font-medium text-sm text-gray-700">Phone Number</label>
-            <input id="phone" value={formData.phone} onChange={handleChange} className="p-3 border rounded-lg w-full" placeholder="+91 98765 43210" />
-          </div>
-          <div>
-            <label className="block font-medium text-sm text-gray-700">Portfolio URL</label>
-            <input id="portfolio" value={formData.portfolio} onChange={handleChange} className="p-3 border rounded-lg w-full" placeholder="https://yourportfolio.com" />
-          </div>
+          {[
+            { id: "fullName", label: "Full Name *", placeholder: "Enter your name" },
+            { id: "email", label: "Email *", placeholder: "you@example.com", type: "email" },
+            { id: "phone", label: "Phone Number", placeholder: "+91 98765 43210" },
+            { id: "portfolio", label: "Portfolio URL", placeholder: "https://yourportfolio.com" },
+            { id: "linkedin", label: "LinkedIn URL", placeholder: "https://linkedin.com/in/yourname" },
+            { id: "github", label: "GitHub URL", placeholder: "https://github.com/yourname" },
+          ].map(({ id, label, placeholder, type = "text" }) => (
+            <div key={id}>
+              <label className="block font-medium text-sm text-gray-700">{label}</label>
+              <input
+                id={id}
+                type={type}
+                value={formData[id]}
+                onChange={handleChange}
+                className="p-3 border rounded-lg w-full"
+                placeholder={placeholder}
+              />
+            </div>
+          ))}
           <div className="md:col-span-2">
             <label className="block font-medium text-sm text-gray-700">Trigram *</label>
-            <input id="trigram" value={formData.trigram} onChange={handleChange} className="p-3 border rounded-lg w-full" placeholder="ABC" />
+            <input
+              id="trigram"
+              value={formData.trigram}
+              onChange={handleChange}
+              className="p-3 border rounded-lg w-full"
+              placeholder="ABC"
+            />
           </div>
         </div>
 
@@ -174,12 +172,36 @@ function App() {
             <div key={level} className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <input placeholder={`${level[0].toUpperCase() + level.slice(1)} - School/College`} value={info.school || info.degree || ""} onChange={(e) => handleEducationChange(level, info.school !== undefined ? 'school' : 'degree', e.target.value)} className="p-3 border rounded-lg" />
               <input placeholder="Board/Institution" value={info.board || info.institution || ""} onChange={(e) => handleEducationChange(level, info.board !== undefined ? 'board' : 'institution', e.target.value)} className="p-3 border rounded-lg" />
-              <input type="text" placeholder="Year/Duration" value={info.year || info.duration || ""} onChange={(e) => handleEducationChange(level, info.year !== undefined ? 'year' : 'duration', e.target.value)} className="p-3 border rounded-lg" />
+              <input placeholder="Year" value={info.year || ""} onChange={(e) => handleEducationChange(level, 'year', e.target.value)} className="p-3 border rounded-lg" />
             </div>
           ))}
         </div>
 
-        {/* Additional fields like Experience, Projects, Achievements, Socials would be appended here in same pattern */}
+        {/* Experiences */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-semibold">Experience</h2>
+          {formData.experiences.map((exp, i) => (
+            <div key={i} className="space-y-2 border p-4 rounded-lg bg-gray-50">
+              <input placeholder="Years (e.g., 2)" value={exp.years} onChange={(e) => handleExperienceChange(i, 'years', e.target.value)} className="p-2 border rounded-lg w-full" />
+              <input placeholder="Skills used (comma-separated)" value={exp.skills} onChange={(e) => handleExperienceChange(i, 'skills', e.target.value)} className="p-2 border rounded-lg w-full" />
+              <input placeholder="Details" value={exp.details} onChange={(e) => handleExperienceChange(i, 'details', e.target.value)} className="p-2 border rounded-lg w-full" />
+              {exp.projects.map((proj, j) => (
+                <input key={j} placeholder={`Project ${j + 1}`} value={proj} onChange={(e) => handleProjectChange(i, j, e.target.value)} className="p-2 border rounded-lg w-full my-1" />
+              ))}
+              <button type="button" onClick={() => addProject(i)} className="text-sm text-indigo-600 underline">+ Add Project</button>
+            </div>
+          ))}
+          <button type="button" onClick={addExperience} className="text-sm text-indigo-600 underline">+ Add Experience</button>
+        </div>
+
+        {/* Achievements */}
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold">Achievements</h2>
+          {formData.achievements.map((a, i) => (
+            <input key={i} placeholder={`Achievement ${i + 1}`} value={a} onChange={(e) => handleAchievementChange(i, e.target.value)} className="p-2 border rounded-lg w-full" />
+          ))}
+          <button type="button" onClick={addAchievement} className="text-sm text-indigo-600 underline">+ Add Achievement</button>
+        </div>
 
         <div className="pt-4">
           <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">
