@@ -127,7 +127,92 @@ function App() {
         {/* Personal Info */}
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">Personal Information</h2>
-          {[... ]}</section>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Full Name *</label>
+            <input
+              id="fullName"
+              type="text"
+              value={formData.fullName}
+              onChange={handleChange}
+              className={`w-full border p-3 rounded-lg ${!isValid(formData.fullName) ? "bg-red-100" : "bg-green-100"}`}
+              placeholder="Enter your name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Email *</label>
+            <input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full border p-3 rounded-lg ${!emailValid(formData.email) ? "bg-red-100" : "bg-green-100"}`}
+              placeholder="you@example.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Phone</label>
+            <input
+              id="phone"
+              type="text"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-lg"
+              placeholder="+91 98765 43210"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Portfolio</label>
+            <input
+              id="portfolio"
+              type="text"
+              value={formData.portfolio}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-lg"
+              placeholder="https://yourportfolio.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">LinkedIn</label>
+            <input
+              id="linkedin"
+              type="text"
+              value={formData.linkedin}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-lg"
+              placeholder="https://linkedin.com/in/yourprofile"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">GitHub</label>
+            <input
+              id="github"
+              type="text"
+              value={formData.github}
+              onChange={handleChange}
+              className="w-full border p-3 rounded-lg"
+              placeholder="https://github.com/yourhandle"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Summary</label>
+            <textarea
+              id="summary"
+              rows="3"
+              value={formData.summary}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-3"
+              placeholder="Brief summary about yourself"
+            />
+          </div>
+        </section>
+
 
         {/* Education section remains */}
 
