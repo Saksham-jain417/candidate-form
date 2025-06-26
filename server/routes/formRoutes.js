@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
 // ✅ GET route to fetch candidate data by trigram
 router.get('/:trigram', async (req, res) => {
     try {
-        const trigram = req.params.trigram.trim().toUpperCase();
+        const trigram = req.params.trigram.trim();
         const candidate = await Candidate.findOne({ trigram });
 
         if (!candidate) {
