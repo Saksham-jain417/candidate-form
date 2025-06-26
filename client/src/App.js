@@ -47,7 +47,7 @@ function App() {
 
       if (trigram) {
         try {
-          const response = await axios.get(`http://localhost:5000/api/form/${trigram}`);
+          const response = await axios.get(`https://candidate-form-backend-k8cm.onrender.com/api/form/${trigram}`);
           if (response.data) {
             setFormData(response.data);
           }
@@ -127,7 +127,7 @@ function App() {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/form", formData);
+      await axios.post("https://candidate-form-backend-k8cm.onrender.com/api/form", formData);
       alert("Form submitted!");
       window.location.reload();
     } catch (err) {
