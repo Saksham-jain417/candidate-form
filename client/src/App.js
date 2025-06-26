@@ -38,19 +38,33 @@ function App() {
     github: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { id, value } = e.target;
+
     if (id === "trigram") {
-      const saved = localStorage.getItem(value.trim());
-      if (saved) {
-        setFormData(JSON.parse(saved));
-      } else {
-        setFormData((prev) => ({ ...prev, [id]: value }));
+      const trigram = value.trim();
+      setFormData((prev) => ({ ...prev, trigram: value }));
+
+      if (trigram) {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/form/${trigram}`);
+          if (response.data) {
+            setFormData(response.data);
+          }
+        } catch (error) {
+          console.warn("No existing data found for this trigram.");
+          // Keep only trigram and reset other fields
+          setFormData((prev) => ({
+            ...prev,
+            trigram,
+          }));
+        }
       }
     } else {
       setFormData((prev) => ({ ...prev, [id]: value }));
     }
   };
+
 
   const handleEducationChange = (level, field, value) => {
     setFormData((prev) => ({
