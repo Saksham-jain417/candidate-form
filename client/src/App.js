@@ -103,20 +103,31 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const trigramRegex = /^[A-Za-z]{1,3}\d{0,2}$/;
+
     if (!formData.fullName || !formData.trigram || !formData.email) {
       alert("Full Name, Trigram, and Email are mandatory.");
       return;
     }
+
+    if (
+      formData.trigram.length < 3 ||
+      formData.trigram.length > 5 ||
+      !trigramRegex.test(formData.trigram)
+    ) {
+      alert("Trigram must be 3 to 5 characters long, starting with 1–3 letters followed by up to 2 digits.");
+      return;
+    }
+
     if (!emailRegex.test(formData.email)) {
       alert("Please enter a valid email.");
       return;
     }
+
     try {
       await axios.post("http://localhost:5000/api/form", formData);
-      if (formData.trigram.trim()) {
-        localStorage.setItem(formData.trigram.trim(), JSON.stringify(formData));
-      }
       alert("Form submitted!");
       window.location.reload();
     } catch (err) {
@@ -124,6 +135,7 @@ function App() {
       alert("Submission failed.");
     }
   };
+
 
   const isValid = (value) => value.trim() !== "";
   const emailValid = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -146,9 +158,15 @@ function App() {
             type="text"
             value={formData.trigram}
             onChange={handleChange}
-            className={`w-full border p-3 rounded-lg ${!isValid(formData.trigram) ? 'bg-red-100' : 'bg-green-100'}`}
-            placeholder="Enter your trigram"
+            className={`w-full border p-3 rounded-lg ${formData.trigram.length >= 3 &&
+                formData.trigram.length <= 5 &&
+                /^[A-Za-z]{1,3}\d{0,2}$/.test(formData.trigram)
+                ? 'bg-green-100'
+                : 'bg-red-100'
+              }`}
+            placeholder="Enter your trigram (1–3 letters + up to 2 digits)"
           />
+
         </div>
 
         {/* Personal Info */}
